@@ -1,0 +1,3 @@
+python-dotenv
+discord==2.3.2
+pyautogen
