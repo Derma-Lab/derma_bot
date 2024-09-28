@@ -1,6 +1,6 @@
 # DERMA Consultation Discord Bot
 
-This Discord bot simulates a medical consultation process using three AI agents: a General Manager (Katie), a Doctor (Dr. Sasha), and a Pharmacist (PharmaBro). The bot uses the Cerebras API for natural language processing and Discord for user interaction.
+This Discord bot simulates a medical consultation process using three AI agents: a General Manager (Katie), a Doctor (Dr. Sasha), and a Pharmacist (PharmaBro). The bot uses autogen for making agents, and discord for UI. 
 
 ![Bot Conversation Example](https://github.com/Derma-Lab/derma_bot/blob/main/src/img/bot_convo.png)
 
