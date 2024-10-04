@@ -1,5 +1,4 @@
 
-
 import os
 from dotenv import load_dotenv
 from autogen.agentchat import GroupChat, AssistantAgent, UserProxyAgent, GroupChatManager
@@ -336,5 +335,3 @@ def initiate_chat():
 
 if __name__ == "__main__":
   initiate_chat()
-
--
