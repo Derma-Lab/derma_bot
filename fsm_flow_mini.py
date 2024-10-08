@@ -146,6 +146,6 @@ manager = GroupChatManager(
 # Start the chat by having the User proxy send an initial message
 user_proxy.initiate_chat(
     manager,
-    message="Initiate clinic operations.",
+    message="Initiate clinic operations. With asking the human expert about the patient's concerns that you can forward to doctor right now. You are doing that as lialision rather than initiator.",
     clear_history=True
 )
