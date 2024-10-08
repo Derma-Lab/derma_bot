@@ -1,5 +1,3 @@
-# dermatology_clinic_fsm.py
-
 import os
 from dotenv import load_dotenv
 from autogen.agentchat import GroupChat, AssistantAgent, UserProxyAgent, GroupChatManager
@@ -21,7 +19,7 @@ azure_api_version = "2024-02-15-preview"
 config_list = [
     {
         "model": "gpt-4o-mini",
-        "api_key": azure_api_key,jkm
+        "api_key": azure_api_key,
         "base_url": azure_endpoint,
         "api_type": "azure",
         "api_version": azure_api_version,
@@ -41,7 +39,7 @@ gpt_config = {
 # ---------------------------
 
 # Task description for all agents
-task = """"""
+task = """You are part of a dermatology clinic's AI system, each assigned a specific role. Adhere strictly to your designated responsibilities and communicate only with the permitted agents to ensure smooth workflow and effective problem-solving within the clinic"""
 
 # ---------------------------
 # Define Agents
@@ -111,9 +109,9 @@ user_proxy = UserProxyAgent(
 graph_dict = {
     user_proxy: [general_manager],
     general_manager: [doctor, pharma_person, human_expert_proxy],
-    doctor: [pharma_person, human_expert_proxy, general_manager],
-    pharma_person: [doctor, general_manager],
-    human_expert_proxy: [doctor, general_manager],
+    doctor: [general_manager],
+    pharma_person: [general_manager],
+    human_expert_proxy: [general_manager],
 }
 
 # ---------------------------
