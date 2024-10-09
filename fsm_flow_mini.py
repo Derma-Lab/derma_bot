@@ -49,8 +49,8 @@ task = """You are part of a dermatology clinic's AI system, each assigned a spec
 general_manager = AssistantAgent(
     name="General_Manager",
     llm_config=gpt_config,
-    system_message=task,
-    description="""I am **ONLY** allowed to speak **immediately** after `User`.
+    system_message=task + """
+    I am **ONLY** allowed to speak **immediately** after `User`.
     I oversee clinic operations and coordinate with `Doctor`, `Pharma_Person`, and `Human_Expert_User`.
     """
 )
