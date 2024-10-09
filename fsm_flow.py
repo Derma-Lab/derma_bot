@@ -78,8 +78,7 @@ def generate_strict_constraints(defined_agents):
 general_manager = AssistantAgent(
   name="General_Manager",
   llm_config=gpt_config,
-  system_message=task,
-  description=f"""\
+  system_message=task + f"""\
 You are the General Manager of the dermatology clinic. Your responsibilities include:
 - Overseeing clinic operations and initiating procedures.
 - Coordinating communication between the Doctor, Pharma_Person, and Human_Expert_User.
@@ -102,9 +101,7 @@ If you receive a request outside your role, respond with:
 # Doctor Agent
 doctor = AssistantAgent(
   name="Doctor",
-  system_message=task,
-  llm_config=gpt_config,
-  description=f"""\
+  system_message=task + f"""\
 You are the Doctor at the dermatology clinic. Your duties include:
 - Diagnosing patients and gathering information about their condition, medical history, current medications, and allergies.
 - Developing treatment plans based on diagnoses.
@@ -128,9 +125,7 @@ Do not mention or acknowledge any agents not defined within the FSM.
 # Pharma Person Agent
 pharma_person = AssistantAgent(
   name="Pharma_Person",
-  system_message=task,
-  llm_config=gpt_config,
-  description=f"""\
+  system_message=task + f"""\
 You are the Pharma Person at the dermatology clinic. Your responsibilities include:
 - Managing pharmaceutical supplies and inventory.
 - Fulfilling prescriptions as directed by the Doctor through the General Manager.
@@ -154,11 +149,7 @@ Do not mention or acknowledge any agents not defined within the FSM.
 # Human Expert Proxy Agent
 human_expert_proxy = UserProxyAgent(
   name="Human_Expert_User",
-  system_message=task,
-  code_execution_config=False,
-  human_input_mode="ALWAYS",  # Enable human input
-  llm_config=False,  # Disable LLM for this agent
-  description=f"""\
+  system_message=task + f"""\
 You are the Human Expert Proxy, representing the Human Expert dermatologist. Your role is to:
 - Provide critiques and feedback on the Doctor's instructions through the General Manager.
 - Represent the Human Expert's input based on interactions mediated by the General Manager.
@@ -174,17 +165,16 @@ If you receive a request outside your role, respond with:
 "I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
 
 Do not mention or acknowledge any agents not defined within the FSM.
-"""
+""",
+  code_execution_config=False,
+  human_input_mode="ALWAYS",  # Enable human input
+  llm_config=False,  # Disable LLM for this agent
 )
 
 # User Proxy Agent
 user_proxy = UserProxyAgent(
   name="User",
-  system_message=task,
-  code_execution_config=False,
-  human_input_mode="NEVER",
-  llm_config=False,
-  description=f"""\
+  system_message=task + f"""\
 You are the User, representing the clinic's user input. Your role is to:
 - Initiate conversations within the FSM.
 - Trigger interactions between other agents based on user inputs.
@@ -200,7 +190,10 @@ If you receive a request outside your role, respond with:
 "I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
 
 Do not mention or acknowledge any agents not defined within the FSM.
-"""
+""",
+  code_execution_config=False,
+  human_input_mode="NEVER",
+  llm_config=False,
 )
 
 # ---------------------------

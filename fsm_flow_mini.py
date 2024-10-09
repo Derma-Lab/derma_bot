@@ -58,47 +58,45 @@ general_manager = AssistantAgent(
 # Doctor Agent
 doctor = AssistantAgent(
     name="Doctor",
-    system_message=task,
-    llm_config=gpt_config,
-    description="""I am **ONLY** allowed to speak **immediately** after `General_Manager` or `Human_Expert_User`.
+    system_message=task + """
+    I am **ONLY** allowed to speak **immediately** after `General_Manager` or `Human_Expert_User`.
     I handle patient diagnoses, treatment plans, and communicate with `Pharma_Person` for medications.
-    """
+    """,
+    llm_config=gpt_config,
 )
 
 # Pharma Person Agent
 pharma_person = AssistantAgent(
     name="Pharma_Person",
-    system_message=task,
-    llm_config=gpt_config,
-    description="""I am **ONLY** allowed to speak **immediately** after `Doctor` or `General_Manager`.
+    system_message=task + """
+    I am **ONLY** allowed to speak **immediately** after `Doctor` or `General_Manager`.
     I manage medication inventory, prescriptions, and liaise with pharmacies.
-    """
+    """,
+    llm_config=gpt_config,
 )
 
 # Human Expert User Proxy Agent
 human_expert_proxy = UserProxyAgent(
     name="Human_Expert_User",
-    system_message=task,
+    system_message=task + """
+    I represent the human input for the Human Expert.
+    Only respond when prompted by `Doctor` or `General_Manager`.
+    """,
     code_execution_config=False,
     human_input_mode="ALWAYS",  # Enable human input
     llm_config=False,  # Disable LLM for this agent
-    description="""
-    I represent the human input for the Human Expert.
-    Only respond when prompted by `Doctor` or `General_Manager`.
-    """
 )
 
 # User Proxy Agent
 user_proxy = UserProxyAgent(
     name="User",
-    system_message=task,
+    system_message=task + """
+    I initiate the conversation and represent the clinic's user input.
+    Never select me as a speaker.
+    """,
     code_execution_config=False,
     human_input_mode="NEVER",
     llm_config=False,
-    description="""
-    I initiate the conversation and represent the clinic's user input.
-    Never select me as a speaker.
-    """
 )
 
 # ---------------------------
