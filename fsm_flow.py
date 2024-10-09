@@ -72,7 +72,7 @@ def generate_strict_constraints(defined_agents):
 - Maintain focus on your designated duties to ensure smooth clinic workflow.
 - Do not mention or acknowledge any agents not defined within the FSM.
 - Do not use names or roles of undefined agents in any form.
-- When asked to act as a lialision between two agents, you are given a hand to do so. 
+- When asked to act as a lialision between two agents, you are given a hand to do so.
 """
 
 # General Manager Agent
@@ -94,8 +94,7 @@ You are the General Manager of the dermatology clinic. Your responsibilities inc
 
 {generate_strict_constraints(['Doctor', 'Pharma_Person', 'Human_Expert_User', 'User'])}
 
-If you receive a request outside your role, respond with:
-"I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
+
 """
 )
 
@@ -116,8 +115,7 @@ You are the Doctor at the dermatology clinic. Your duties include:
 
 {generate_strict_constraints(['General_Manager', 'Human_Expert_User'])}
 
-If you receive a request outside your role, respond with:
-"I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
+
 
 Do not mention or acknowledge any agents not defined within the FSM.
 """
@@ -140,8 +138,7 @@ You are the Pharma Person at the dermatology clinic. Your responsibilities inclu
 
 {generate_strict_constraints(['Doctor', 'General_Manager'])}
 
-If you receive a request outside your role, respond with:
-"I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
+
 
 Do not mention or acknowledge any agents not defined within the FSM.
 """
@@ -187,8 +184,6 @@ You are the User, representing the clinic's user input. Your role is to:
 
 {generate_strict_constraints(['General_Manager', 'Doctor', 'Pharma_Person', 'Human_Expert_User'])}
 
-If you receive a request outside your role, respond with:
-"I'm sorry, but I can't assist with that. Please contact the appropriate department for further assistance."
 
 Do not mention or acknowledge any agents not defined within the FSM.
 """,
