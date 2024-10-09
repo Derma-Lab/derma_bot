@@ -49,8 +49,8 @@ task = """You are part of a dermatology clinic's AI system, each assigned a spec
 general_manager = AssistantAgent(
     name="General_Manager",
     llm_config=gpt_config,
-    system_message=task + """
-    I am **ONLY** allowed to speak **immediately** after `User`.
+    system_message=task + """I am general manager. 
+    I am **ONLY** allowed to speak **immediately** after `Human Expert User`. 
     I oversee clinic operations and coordinate with `Doctor`, `Pharma_Person`, and `Human_Expert_User`.
     """
 )
@@ -58,7 +58,7 @@ general_manager = AssistantAgent(
 # Doctor Agent
 doctor = AssistantAgent(
     name="Doctor",
-    system_message=task + """
+    system_message=task + """ I am the Doctor. 
     I am **ONLY** allowed to speak **immediately** after `General_Manager` or `Human_Expert_User`.
     I handle patient diagnoses, treatment plans, and communicate with `Pharma_Person` for medications.
     """,
@@ -68,7 +68,7 @@ doctor = AssistantAgent(
 # Pharma Person Agent
 pharma_person = AssistantAgent(
     name="Pharma_Person",
-    system_message=task + """
+    system_message=task + """ I am the Pharma Person. I am only called when the doctor asks for a prescription. 
     I am **ONLY** allowed to speak **immediately** after `Doctor` or `General_Manager`.
     I manage medication inventory, prescriptions, and liaise with pharmacies.
     """,
