@@ -72,6 +72,7 @@ def generate_strict_constraints(defined_agents):
 - Maintain focus on your designated duties to ensure smooth clinic workflow.
 - Do not mention or acknowledge any agents not defined within the FSM.
 - Do not use names or roles of undefined agents in any form.
+- When asked to act as a lialision between two agents, you are given a hand to do so. 
 """
 
 # General Manager Agent
