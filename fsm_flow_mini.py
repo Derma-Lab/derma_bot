@@ -23,6 +23,7 @@ config_list = [
         "base_url": azure_endpoint,
         "api_type": "azure",
         "api_version": azure_api_version,
+        "max_tokens": 500
     }
 ]
 
@@ -51,7 +52,7 @@ general_manager = AssistantAgent(
     llm_config=gpt_config,
     system_message=task + """I am general manager. 
     I am **ONLY** allowed to speak **immediately** after `Human Expert User`. 
-    I oversee clinic operations and coordinate with `Doctor`, `Pharma_Person`, and `Human_Expert_User`.
+    I oversee clinic operations and coordinate with `Doctor`, `Pharma_Person`, and `Human_Expert_User`. I will write very precise messages.
     """
 )
 
