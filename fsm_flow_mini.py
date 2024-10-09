@@ -141,9 +141,29 @@ manager = GroupChatManager(
 # Initiate the Chat
 # ---------------------------
 
-# Start the chat by having the User proxy send an initial message
-user_proxy.initiate_chat(
-    manager,
-    message="Initiate clinic operations. With asking the human expert about the patient's concerns that you can forward to doctor right now. You are doing that as lialision rather than initiator.",
-    clear_history=True
-)
+def initiate_chat():
+    while True:
+        # Start the chat by having the User proxy send an initial message
+        user_proxy.initiate_chat(
+            manager,
+            message="""Initiate clinic operations. General manager you shall be speaking with the human expert who is a dermatologist as well. Ask the human expert about the patient's condition and hearing human expert speak to doctor ASAP.""",
+            clear_history=True
+        )
+
+        # Run the GroupChatManager
+        manager.run()
+
+        # After termination, prompt the user to start a new conversation or exit
+        user_input = input("Do you want to start a new conversation? (yes/no): ").strip().lower()
+        if user_input not in ["yes", "y"]:
+            print("Terminating the FSM. Goodbye!")
+            break
+        else:
+            print("Starting a new conversation...\n")
+
+# ---------------------------
+# Initiate the Conversation Loop
+# ---------------------------
+
+if __name__ == "__main__":
+    initiate_chat()
