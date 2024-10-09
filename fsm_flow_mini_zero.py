@@ -79,7 +79,7 @@ pharma_person = AssistantAgent(
 # Human Expert User Proxy Agent
 human_expert_proxy = UserProxyAgent(
     name="Human_Expert_User",
-    system_message=task + """
+    system_message="""
     I represent the human input for the Human Expert.
     Only respond when prompted by `Doctor` or `General_Manager`.
     """,
@@ -91,7 +91,7 @@ human_expert_proxy = UserProxyAgent(
 # User Proxy Agent
 user_proxy = UserProxyAgent(
     name="User",
-    system_message=task + """
+    system_message="""
     I initiate the conversation and represent the clinic's user input.
     Never select me as a speaker.
     """,
