@@ -124,9 +124,35 @@ def conversation_manager():
     print(f"\nGeneral_Manager: {agent_response}\n")
 
     current_speaker = 'Patient'
-
     # Step 2: Patient answers about their disease
     print("\n--- Step 2: Patient responds ---")
+    agent = patient
+    agent_response = agent.generate_response(conversation_history)
+    conversation_history.append({'role': 'user', 'name': 'Patient', 'content': agent_response})
+    print(f"\nPatient: {agent_response}\n")
+
+    current_speaker = 'General_Manager'
+
+    # Step 2.1: General Manager asks Doctor
+    print("\n--- Step 2.1: General Manager asks Doctor ---")
+    agent = general_manager
+    agent_response = agent.generate_response(conversation_history)
+    conversation_history.append({'role': 'assistant', 'name': 'General_Manager', 'content': agent_response})
+    print(f"\nGeneral_Manager: {agent_response}\n")
+
+    current_speaker = 'Doctor'
+
+    # Step 2.2: Doctor responds
+    print("\n--- Step 2.2: Doctor responds ---")
+    agent = doctor
+    agent_response = agent.generate_response(conversation_history)
+    conversation_history.append({'role': 'assistant', 'name': 'Doctor', 'content': agent_response})
+    print(f"\nDoctor: {agent_response}\n")
+
+    current_speaker = 'Patient'
+
+    # Step 2.3: Patient answers
+    print("\n--- Step 2.3: Patient answers ---")
     agent = patient
     agent_response = agent.generate_response(conversation_history)
     conversation_history.append({'role': 'user', 'name': 'Patient', 'content': agent_response})
