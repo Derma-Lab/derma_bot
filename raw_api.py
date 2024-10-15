@@ -2,9 +2,10 @@ import os
 import openai
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
-
+# Get Azure OpenAI API key and endpoint
 azure_api_key = os.getenv("AZURE_OAI_API_KEY")
 azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 azure_api_version = "2024-07-01-preview"
@@ -345,15 +346,15 @@ def analyze_approval(message):
 
 def analyze_yes_no(message):
     # Analyze the Patient's message to determine if it is 'YES' or 'NO'
-    # Using gpt-4o-mini to analyze the message and output 'YES' or 'NO'
+    # Using Azure OpenAI endpoint to analyze the message and output 'YES' or 'NO'
 
     messages = [
         {'role': 'system', 'content': 'You will be provided with a message from a patient. If the patient is suggesting differences in their condition, respond with "YES". If the patient approves the diagnosis, respond with "NO". Do not include any other text.'},
         {'role': 'user', 'content': message}
     ]
 
-    chat_completion = openai.ChatCompletion.create(
-        engine="gpt-4o-mini",
+    chat_completion = client.chat.completions.create(
+        model="gpt-4o-mini",  # Replace with your actual deployment name
         messages=messages,
         max_tokens=3,
         temperature=0,
@@ -364,6 +365,9 @@ def analyze_yes_no(message):
     else:
         return 'NO'
 
+# ---------------------------
+# Start the Conversation
+# ---------------------------
 
 if __name__ == "__main__":
     conversation_manager()
