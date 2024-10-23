@@ -1,205 +1,202 @@
-import getpass
 import os
-import functools
-import operator
+from typing import Annotated, Optional, Dict, Any
 from dotenv import load_dotenv
-
-from langchain_core.messages import (
-    AIMessage,
-    BaseMessage,
-    HumanMessage,
-    ToolMessage,
-)
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.tools import tool
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_experimental.utilities import PythonREPL
-from langgraph.graph import END, StateGraph, START
-from typing import Annotated, Sequence
-from typing_extensions import TypedDict
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
-from langgraph.prebuilt import ToolNode
-from typing import Literal
-from IPython.display import Image, display
-from langchain_openai import AzureOpenAI
+from typing import Sequence
+from typing_extensions import TypedDict
+from langchain_core.messages import BaseMessage
+from langgraph.graph import END, StateGraph, START
+from langgraph.checkpoint.memory import MemorySaver
+import operator
 
+def print_separator():
+    print("\n" + "="*50 + "\n")
 
-# Ensure these environment variables are set
-azure_api_key = os.getenv("AZURE_OAI_API_KEY")
-azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-azure_api_version = "2023-03-15-preview"
-
-# Check if the required environment variables are set
-if not azure_api_key or not azure_endpoint:
-    raise ValueError("Please set the AZURE_OAI_API_KEY and AZURE_OPENAI_ENDPOINT environment variables.")
-
-tavily_api_key = os.getenv("TAVILY_API_KEY")
-langsmith_api_key = os.getenv("LANGSMITH_API_KEY")
-
+# Load environment variables
 load_dotenv()
 
-
-def create_agent(llm, tools, system_message: str):
-    """Create an agent."""
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            (
-                "system",
-                "You are a helpful AI assistant, collaborating with other assistants."
-                " Use the provided tools to progress towards answering the question."
-                " If you are unable to fully answer, that's OK, another assistant with different tools "
-                " will help where you left off. Execute what you can to make progress."
-                " If you or any of the other assistants have the final answer or deliverable,"
-                " prefix your response with FINAL ANSWER so the team knows to stop."
-                " You have access to the following tools: {tool_names}.\n{system_message}",
-            ),
-            MessagesPlaceholder(variable_name="messages"),
-        ]
-    )
-    prompt = prompt.partial(system_message=system_message)
-    prompt = prompt.partial(tool_names=", ".join([tool.name for tool in tools]))
-    return prompt | llm.bind_tools(tools)
-
-
-
-tavily_tool = TavilySearchResults(max_results=5)
-
-# Warning: This executes code locally, which can be unsafe when not sandboxed
-
-repl = PythonREPL()
-
-
-@tool
-def python_repl(
-    code: Annotated[str, "The python code to execute to generate your chart."],
-):
-    """Use this to execute python code. If you want to see the output of a value,
-    you should print it out with `print(...)`. This is visible to the user."""
-    try:
-        result = repl.run(code)
-    except BaseException as e:
-        return f"Failed to execute. Error: {repr(e)}"
-    result_str = f"Successfully executed:\n```python\n{code}\n```\nStdout: {result}"
-    return (
-        result_str + "\n\nIf you have completed all tasks, respond with FINAL ANSWER."
-    )
-
-
-# This defines the object that is passed between each node
-# in the graph. We will create different nodes for each agent and tool
-class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], operator.add]
-    sender: str
-
-
-# Helper function to create a node for a given agent
-def agent_node(state, agent, name):
-    result = agent.invoke(state)
-    # We convert the agent output into a format that is suitable to append to the global state
-    if isinstance(result, ToolMessage):
-        pass
-    else:
-        result = AIMessage(**result.dict(exclude={"type", "name"}), name=name)
-    return {
-        "messages": [result],
-        "sender": name,
-    }
-
+# Initialize LLM with debug print
+api_key = os.getenv("AZURE_OAI_API_KEY")
+print(f"DEBUG: API Key present: {bool(api_key)}")
 
 llm = AzureChatOpenAI(
-    api_key=azure_api_key,
-    deployment_name="gpt-4o",  # Ensure this matches your deployment name
-    api_version=azure_api_version
+    api_key=api_key,
+    deployment_name="gpt-4o",
+    api_version="2023-03-15-preview"
 )
 
-result = llm.invoke("Tell me a joke")
+# Test LLM
+print("DEBUG: Testing LLM...")
+test_response = llm.invoke("Test message")
+print(f"DEBUG: LLM test response received: {test_response.content}")
 
-# Research agent and node
-research_agent = create_agent(
-    llm,
-    [tavily_tool],
-    system_message="You should provide accurate data for the chart_generator to use.",
-)
-research_node = functools.partial(agent_node, agent=research_agent, name="Researcher")
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], operator.add]
+    current_agent: str
 
-# chart_generator
-chart_agent = create_agent(
-    llm,
-    [python_repl],
-    system_message="Any charts you display will be visible by the user.",
-)
-chart_node = functools.partial(agent_node, agent=chart_agent, name="chart_generator")
+def receptionist_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Receptionist node with debug prints"""
+    print("DEBUG: Receptionist node activated")
+    messages = [
+        SystemMessage(content="You are a medical receptionist. Gather initial information about the patient's skin concern."),
+        *state["messages"]
+    ]
+    
+    try:
+        response = llm.invoke(messages)
+        print(f"DEBUG: Receptionist response: {response.content}")
+        
+        return {
+            "messages": [AIMessage(content=response.content)],
+            "current_agent": "receptionist"
+        }
+    except Exception as e:
+        print(f"ERROR in receptionist node: {str(e)}")
+        raise
 
+def dermatologist_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Dermatologist node with debug prints"""
+    print("DEBUG: Dermatologist node activated")
+    messages = [
+        SystemMessage(content="You are a dermatologist. Assess the patient's skin condition and provide initial recommendations."),
+        *state["messages"]
+    ]
+    
+    try:
+        response = llm.invoke(messages)
+        print(f"DEBUG: Dermatologist response: {response.content}")
+        
+        return {
+            "messages": [AIMessage(content=response.content)],
+            "current_agent": "dermatologist"
+        }
+    except Exception as e:
+        print(f"ERROR in dermatologist node: {str(e)}")
+        raise
 
-tools = [tavily_tool, python_repl]
-tool_node = ToolNode(tools)
+def pharmacist_node(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Pharmacist node with debug prints"""
+    print("DEBUG: Pharmacist node activated")
+    messages = [
+        SystemMessage(content="You are a pharmacist. Provide specific product recommendations and usage instructions."),
+        *state["messages"]
+    ]
+    
+    try:
+        response = llm.invoke(messages)
+        print(f"DEBUG: Pharmacist response: {response.content}")
+        
+        return {
+            "messages": [AIMessage(content=response.content)],
+            "current_agent": "pharmacist"
+        }
+    except Exception as e:
+        print(f"ERROR in pharmacist node: {str(e)}")
+        raise
 
+def should_continue(state: AgentState) -> str:
+    """Determine next step with debug prints"""
+    current = state.get("current_agent", "")
+    print(f"DEBUG: Current agent in should_continue: {current}")
+    
+    if current == "receptionist":
+        return "dermatologist"
+    elif current == "dermatologist":
+        return "pharmacist"
+    return "END"
 
-def router(state):
-    # This is the router
-    messages = state["messages"]
-    last_message = messages[-1]
-    if last_message.tool_calls:
-        # The previous agent is invoking a tool
-        return "call_tool"
-    if "FINAL ANSWER" in last_message.content:
-        # Any agent decided the work is done
-        return END
-    return "continue"
-
-
+# Set up workflow
 workflow = StateGraph(AgentState)
-workflow.add_node("Researcher", research_node)
-workflow.add_node("chart_generator", chart_node)
-workflow.add_node("call_tool", tool_node)
 
-workflow.add_conditional_edges(
-    "Researcher",
-    router,
-    {"continue": "chart_generator", "call_tool": "call_tool", END: END},
-)
-workflow.add_conditional_edges(
-    "chart_generator",
-    router,
-    {"continue": "Researcher", "call_tool": "call_tool", END: END},
-)
+# Add nodes
+workflow.add_node("receptionist", receptionist_node)
+workflow.add_node("dermatologist", dermatologist_node)
+workflow.add_node("pharmacist", pharmacist_node)
 
+# Add edges
+workflow.add_edge(START, "receptionist")
+
+# Add conditional edges
 workflow.add_conditional_edges(
-    "call_tool",
-    # Each agent node updates the 'sender' field
-    # the tool calling node does not, meaning
-    # this edge will route back to the original agent
-    # who invoked the tool
-    lambda x: x["sender"],
+    "receptionist",
+    should_continue,
     {
-        "Researcher": "Researcher",
-        "chart_generator": "chart_generator",
-    },
+        "dermatologist": "dermatologist",
+        "pharmacist": "pharmacist",
+        "END": END
+    }
 )
-workflow.add_edge(START, "Researcher")
+
+workflow.add_conditional_edges(
+    "dermatologist",
+    should_continue,
+    {
+        "pharmacist": "pharmacist",
+        "END": END
+    }
+)
+
+workflow.add_conditional_edges(
+    "pharmacist",
+    lambda x: "END",
+    {
+        "END": END
+    }
+)
+
+# Compile graph
 graph = workflow.compile()
 
+def process_consultation():
+    """Process consultation with extensive debug information"""
+    print("\n=== Dermatology Clinic Consultation System ===")
+    patient_input = input("\nPlease describe your skin concern:\nPatient: ").strip()
+    
+    if not patient_input:
+        print("No input provided.")
+        return
+    
+    print_separator()
+    print("Starting consultation process...")
+    
+    # Initial state
+    state = {
+        "messages": [HumanMessage(content=patient_input)],
+        "current_agent": "start"
+    }
+    print("DEBUG: Initial state created")
+    
+    try:
+        for current_state in graph.stream(
+            state,
+            {"configurable": {"thread_id": "consultation-1"}}
+        ):
+            print("DEBUG: Processing new state")
+            print(f"DEBUG: Current agent: {current_state.get('current_agent')}")
+            
+            if current_state.get("messages"):
+                last_message = current_state["messages"][-1]
+                if isinstance(last_message, AIMessage):
+                    agent = current_state.get("current_agent", "Unknown")
+                    print(f"\n=== {agent.title()}'s Response ===")
+                    print(last_message.content)
+                    print_separator()
+    
+    except Exception as e:
+        print(f"Error in consultation: {str(e)}")
+        print(f"Error type: {type(e)}")
+    
+    print("Consultation complete.")
 
-try:
-    display(Image(graph.get_graph(xray=True).draw_mermaid_png()))
-except Exception:
-    # This requires some extra dependencies and is optional
-    pass
-
-
-events = graph.stream(
-    {
-        "messages": [
-            HumanMessage(
-                content="Fetch the UK's GDP over the past 5 years,"
-                " then draw a line graph of it."
-                " Once you code it up, finish."
-            )
-        ],
-    },
-    # Maximum number of steps to take in the graph
-    {"recursion_limit": 150},
-)
-for s in events:
-    print(s)
-    print("----")
+if __name__ == "__main__":
+    try:
+        process_consultation()
+    except KeyboardInterrupt:
+        print("\n\nConsultation interrupted.")
+    except Exception as e:
+        print(f"\nSystem error: {str(e)}")
+        print(f"Error type: {type(e)}")
+    finally:
+        print_separator()
+        print("System closed.")
