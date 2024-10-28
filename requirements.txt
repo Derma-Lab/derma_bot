@@ -1,3 +1,5 @@
 python-dotenv
-discord==2.3.2
-pyautogen
+langchain 
+langchain_openai
+langgraph 
+streamlit
