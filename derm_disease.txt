@@ -1,0 +1,1 @@
+macule,papule, plaque, vesicle, nodule, wheal, pustule, crust, scale, erosion, cyst, ulcer, scar, atrophy, psoriasis, urticaria, eczema, lichen planus, acne, vitiligo
