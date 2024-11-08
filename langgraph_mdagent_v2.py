@@ -43,7 +43,8 @@ def get_image_descrption(image_addr: str):
     dashscope_response = dashscope.MultiModalConversation.call(model='qwen-vl-max-0809', messages=image_messages)   
     return dashscope_response
 
-def create_dermatology_mdagents():
+def create_dermatology_mdagents(patient_info:dict):
+    image_address = patient_info.get("image_address")
     
     tools = [get_image_descrption]  # Define your tools
     tool_node = ToolNode(tools)
@@ -56,7 +57,6 @@ def create_dermatology_mdagents():
         api_version="2023-03-15-preview"
     ).bind_tools([get_image_descrption])
     
-
 
     def assess_complexity(state: DermState):
         """Determines case complexity and required team structure"""
@@ -329,7 +329,7 @@ def create_dermatology_mdagents():
 def run_dermatology_consultation(patient_info: dict):
     """Run complete dermatology consultation"""
     
-    workflow = create_dermatology_mdagents()
+    workflow = create_dermatology_mdagents(patient_info)
     
     initial_state = {
         "messages": [],
