@@ -28,24 +28,26 @@ class DermState(TypedDict):
 def get_image_descrption(image_addr: str):
     "Retrieve image description"
     dashscope.api_key = os.getenv("DASHSCOPE_API_KEY")
-    # Define image_messages before using it
+    
+    # Define image_messages using the image_addr parameter correctly
     image_messages = [{
         'role': 'user',
         'content': [
             {
-                'image': {image_addr}
+                'image': image_addr  # Use the parameter directly as a string
             },
             {
                 'text': 'Imagine you are an experienced dermatologist, please describe the visual symptom with quantifiable descriptive way and give a potential diagnose in one word'
             },
         ]
     }]
+    
+    # Call the MultiModalConversation with the defined image_messages
     dashscope_response = dashscope.MultiModalConversation.call(model='qwen-vl-max-0809', messages=image_messages)   
     return dashscope_response
 
 def create_dermatology_mdagents(patient_info:dict):
-    image_address = patient_info.get("image_address")
-    
+
     tools = [get_image_descrption]  # Define your tools
     tool_node = ToolNode(tools)
 
@@ -68,7 +70,7 @@ def create_dermatology_mdagents(patient_info:dict):
             - High: Severe cases requiring coordinated multi-team approach (e.g., severe drug reactions, complex autoimmune conditions)
             
             Provide only complexity level and brief rationale."""),
-            HumanMessage(content=f"Patient Information: {patient_info}")
+            HumanMessage(content=f"get_image_description('{patient_info.get('image_address')}')")
         ])
         
         complexity = assessment.content.split("\n")[0].strip()
