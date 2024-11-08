@@ -1,19 +1,19 @@
 # Dependencies
-frontend/agent_ui/agent_ui/node_modules
-frontend/agent_ui/agent_ui/.pnp
-frontend/agent_ui/agent_ui/.pnp.js
+agent_ui/node_modules
+agent_ui/.pnp
+agent_ui/.pnp.js
 
 # Testing
-frontend/agent_ui/agent_ui/coverage
+agent_ui/coverage
 
 # Next.js build outputs
-frontend/agent_ui/agent_ui/.next/
-frontend/agent_ui/agent_ui/out/
-frontend/agent_ui/agent_ui/build
+agent_ui/.next/
+agent_ui/out/
+agent_ui/build
 
 # Production
-frontend/agent_ui/agent_ui/build
-frontend/agent_ui/agent_ui/dist
+agent_ui/build
+agent_ui/dist
 
 # Misc
 .DS_Store
