@@ -12,6 +12,7 @@ import dashscope
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
+
 class DermState(TypedDict):
     """State for dermatology consultation flow"""
     messages: Annotated[List, operator.add]  # Chat history 
@@ -23,33 +24,38 @@ class DermState(TypedDict):
     final_diagnosis: str
     treatment_plan: str
 
+@tool
+def get_image_descrption(image_addr: str):
+    "Retrieve image description"
+    dashscope.api_key = os.getenv("DASHSCOPE_API_KEY")
+    # Define image_messages before using it
+    image_messages = [{
+        'role': 'user',
+        'content': [
+            {
+                'image': {image_addr}
+            },
+            {
+                'text': 'Imagine you are an experienced dermatologist, please describe the visual symptom with quantifiable descriptive way and give a potential diagnose in one word'
+            },
+        ]
+    }]
+    dashscope_response = dashscope.MultiModalConversation.call(model='qwen-vl-max-0809', messages=image_messages)   
+    return dashscope_response
+
 def create_dermatology_mdagents():
+    
+    tools = [get_image_descrption]  # Define your tools
+    tool_node = ToolNode(tools)
+
     # Initialize workflow graph
     workflow = StateGraph(DermState)
     llm = AzureChatOpenAI(
         api_key=os.getenv("AZURE_OAI_API_KEY"),
         deployment_name="gpt-4o",
         api_version="2023-03-15-preview"
-    )
-
-    @tool
-    def get_image_descrption():
-        "Retrieve image description"
-        dashscope.api_key = os.getenv("DASHSCOPE_API_KEY")
-        dashscope_response = dashscope.MultiModalConversation.call(model='qwen-vl-max-0809', messages=image_messages)
-        
-        image_messages = [{
-        'role': 'user',
-        'content': [
-            {
-                'image': "https://derma-image.oss-rg-china-mainland.aliyuncs.com/shutterstock_1892383180.webp"
-            },
-            {
-                'text': 'Imagine you are an experienced dermatologist, please describe the visual symptom with quantifiable descriptive way and give a potential diagnose in one word'
-            },
-        ]
-        }]
-        return dashscope_response
+    ).bind_tools([get_image_descrption])
+    
 
 
     def assess_complexity(state: DermState):
@@ -61,8 +67,7 @@ def create_dermatology_mdagents():
             - Moderate: Complex cases needing multi-specialist collaboration (e.g., severe psoriasis, unusual rashes)
             - High: Severe cases requiring coordinated multi-team approach (e.g., severe drug reactions, complex autoimmune conditions)
             
-            Provide only complexity level and brief rationale.
-            Additional Information: {dashscope_response}"""),
+            Provide only complexity level and brief rationale."""),
             HumanMessage(content=f"Patient Information: {patient_info}")
         ])
         
@@ -274,6 +279,7 @@ def create_dermatology_mdagents():
 
     # Add nodes
     workflow.add_node("assess_complexity", assess_complexity)
+    workflow.add_node("tools",tool_node)
     workflow.add_node("single_dermatologist", single_dermatologist)
     workflow.add_node("recruit_specialists", recruit_specialists)
     workflow.add_node("facilitate_discussion", facilitate_discussion)
@@ -298,7 +304,9 @@ def create_dermatology_mdagents():
 
     # Basic linear paths
     workflow.add_edge(START, "assess_complexity")
-    workflow.add_edge("single_dermatologist", END)
+    workflow.add_edge("assess_complexity", "tools")  # Connect assess_complexity to tools
+    workflow.add_edge("tools", "single_dermatologist")  # Connect tools to the next node
+    workflow.add_edge("single_dermatologist", END)  # Connect single_dermatologist to END
 
     # Conditional edges based on complexity
     workflow.add_conditional_edges(
@@ -320,6 +328,7 @@ def create_dermatology_mdagents():
 
 def run_dermatology_consultation(patient_info: dict):
     """Run complete dermatology consultation"""
+    
     workflow = create_dermatology_mdagents()
     
     initial_state = {
@@ -364,6 +373,7 @@ if __name__ == "__main__":
     # Example usage
     
     complex_case = {
+    "image_address": "https://derma-image.oss-rg-china-mainland.aliyuncs.com/shutterstock_1892383180.webp",
     "symptoms": "dry skin",
     "duration": "3 weeks, rapidly progressing",
     "history": "None",
