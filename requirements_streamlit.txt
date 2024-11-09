@@ -1,0 +1,16 @@
+
+streamlit>=1.32.0
+streamlit-chat>=0.1.1
+python-dotenv>=1.0.0
+
+
+langchain-core>=0.1.30
+langchain-openai>=0.0.8
+langgraph>=0.0.25
+
+
+typing_extensions==4.10.0  # Exact version from your environment
+
+
+mypy>=1.9.0
+types-python-dotenv>=1.0.0
