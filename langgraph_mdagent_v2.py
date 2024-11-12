@@ -1,7 +1,7 @@
 import os
 from typing import Annotated, TypedDict, List, Dict
 from langgraph.graph import StateGraph, Graph, END, START
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage,ToolMessage
 from langchain_openai import AzureChatOpenAI
 import operator
 from termcolor import cprint
@@ -11,7 +11,11 @@ import random
 import dashscope
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
+import hashlib
 
+def generate_short_id(original_id: str) -> str:
+    # Generate a hash and take the first 40 characters
+    return hashlib.md5(original_id.encode()).hexdigest()[:40]
 
 class DermState(TypedDict):
     """State for dermatology consultation flow"""
@@ -25,7 +29,7 @@ class DermState(TypedDict):
     treatment_plan: str
 
 @tool
-def get_image_descrption(image_addr: str):
+def get_image_descrption(image_addr: str) -> str:
     "Retrieve image description"
     dashscope.api_key = os.getenv("DASHSCOPE_API_KEY")
     
@@ -37,16 +41,16 @@ def get_image_descrption(image_addr: str):
                 'image': image_addr  # Use the parameter directly as a string
             },
             {
-                'text': 'Imagine you are an experienced dermatologist, please describe the visual symptom with quantifiable descriptive way and give a potential diagnose in one word'
+                'text': """Please derscribe symptom
+                    """
             },
         ]
     }]
-    
     # Call the MultiModalConversation with the defined image_messages
     dashscope_response = dashscope.MultiModalConversation.call(model='qwen-vl-max-0809', messages=image_messages)   
     return dashscope_response
 
-def create_dermatology_mdagents(patient_info:dict):
+def create_dermatology_mdagents():
 
     tools = [get_image_descrption]  # Define your tools
     tool_node = ToolNode(tools)
@@ -57,20 +61,27 @@ def create_dermatology_mdagents(patient_info:dict):
         api_key=os.getenv("AZURE_OAI_API_KEY"),
         deployment_name="gpt-4o",
         api_version="2023-03-15-preview"
+    )
+    llm_with_tool  = AzureChatOpenAI(
+        api_key=os.getenv("AZURE_OAI_API_KEY"),
+        deployment_name="gpt-4o",
+        api_version="2023-03-15-preview"
     ).bind_tools([get_image_descrption])
     
 
     def assess_complexity(state: DermState):
         """Determines case complexity and required team structure"""
         patient_info = state["patient_data"]
-        assessment = llm.invoke([
+        image_address = patient_info.get('image_address')
+        tool_call_id = generate_short_id(image_address) 
+        assessment = llm_with_tool.invoke([
             SystemMessage(content="""You are a dermatology triage specialist. Classify case complexity as:
             - Low: Standard conditions manageable by one dermatologist (e.g., mild eczema, acne, common rashes)
             - Moderate: Complex cases needing multi-specialist collaboration (e.g., severe psoriasis, unusual rashes)
             - High: Severe cases requiring coordinated multi-team approach (e.g., severe drug reactions, complex autoimmune conditions)
             
             Provide only complexity level and brief rationale."""),
-            HumanMessage(content=f"get_image_description('{patient_info.get('image_address')}')")
+            ToolMessage(content=f"get_image_description", tool_call_id=tool_call_id)
         ])
         
         complexity = assessment.content.split("\n")[0].strip()
@@ -331,7 +342,7 @@ def create_dermatology_mdagents(patient_info:dict):
 def run_dermatology_consultation(patient_info: dict):
     """Run complete dermatology consultation"""
     
-    workflow = create_dermatology_mdagents(patient_info)
+    workflow = create_dermatology_mdagents()
     
     initial_state = {
         "messages": [],
@@ -375,7 +386,7 @@ if __name__ == "__main__":
     # Example usage
     
     complex_case = {
-    "image_address": "https://derma-image.oss-rg-china-mainland.aliyuncs.com/shutterstock_1892383180.webp",
+    "image_address": "https://derma-image.oss-rg-china-mainland.aliyuncs.com/IMG_4641.png",
     "symptoms": "dry skin",
     "duration": "3 weeks, rapidly progressing",
     "history": "None",
