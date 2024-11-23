@@ -4,14 +4,7 @@ import ChatWindow from '../components/ChatWindow';
 
 export default function HomePage() {
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundImage: 'url(/isometric.jpg)',
-        backgroundSize: 'cover',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="min-h-screen bg-gray-100 dotted-background">
       <ChatWindow />
     </div>
   );

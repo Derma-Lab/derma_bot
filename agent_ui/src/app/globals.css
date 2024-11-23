@@ -14,14 +14,26 @@
   }
 }
 
+.dotted-background {
+  padding: 2.25em 1.6875em;
+  background-image: -webkit-repeating-radial-gradient(center center, rgba(0,0,0,.2), rgba(0,0,0,.2) 1px, transparent 1px, transparent 100%);
+  background-image: -moz-repeating-radial-gradient(center center, rgba(0,0,0,.2), rgba(0,0,0,.2) 1px, transparent 1px, transparent 100%);
+  background-image: -ms-repeating-radial-gradient(center center, rgba(0,0,0,.2), rgba(0,0,0,.2) 1px, transparent 1px, transparent 100%);
+  background-image: repeating-radial-gradient(center center, rgba(0,0,0,.2), rgba(0,0,0,.2) 1px, transparent 1px, transparent 100%);
+  -webkit-background-size: 15px 15px;
+  -moz-background-size: 15px 15px;
+  background-size: 15px 15px;
+  background-attachment: fixed;
+}
+
 body {
   margin: 0;
   padding: 0;
   color: var(--foreground);
   font-family: Arial, sans-serif;
 
-  background-image: url('/isometric.jpg');
-  background-size: cover;
-  background-attachment: fixed;
 
+  background-size: 20px 20px, cover;
+  background-attachment: fixed;
+  background-position: 0 0, center;
 }
