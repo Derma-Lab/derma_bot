@@ -8,7 +8,7 @@ import operator
 from dataclasses import dataclass
 from termcolor import cprint
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Body, FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -333,8 +333,8 @@ def create_dermatology_graph():
     return workflow.compile()
 
 @app.post("/process_input")
-async def process_input(request: Request):
-    data = await request.json()
+async def process_input(body: dict):
+    data = body
     user_input = data.get('input', '')
 
     # Initialize state

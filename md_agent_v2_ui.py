@@ -40,6 +40,47 @@ class DermState(TypedDict):
     treatment_plan: str
 
 def get_image_description(image_content: bytes) -> str:
+    """Retrieve image description using GPT-4 Vision"""
+    # Encode the image content to base64
+    encoded_image = base64.b64encode(image_content).decode('utf-8')
+    
+    # Prepare API request
+    headers = {
+        'api-key': os.getenv("AZURE_OAI_API_KEY"),
+        'Content-Type': 'application/json'
+    }
+    
+    endpoint = f"{os.getenv('AZURE_OPENAI_ENDPOINT')}"
+    
+    payload = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an experienced dermatologist. Please describe the visual symptoms in a quantifiable descriptive way and provide a potential diagnosis in one word."
+            },
+            {
+                "role": "user", 
+                "content": [
+                    {
+                        "type": "image",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{encoded_image}"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(endpoint, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content']
+    except Exception as e:
+        return f"Error processing image: {str(e)}"
+
+
+def get_image_description_v2(image_content: bytes) -> str:
     """Retrieve image description using DashScope API"""
     dashscope.api_key = os.getenv("DASHSCOPE_API_KEY")
     print("DashScope tool is called")
