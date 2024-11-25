@@ -119,7 +119,7 @@ export async function POST(request: Request) {
         execute: async ({ title }) => {
           const id = generateUUID();
           let draftText = '';
-
+          console.log('Creating document with title:', title);
           streamingData.append({
             type: 'id',
             content: id,
