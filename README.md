@@ -1,60 +1,57 @@
-# DERMA Frontend
+# Dermalab AI Chatbot
 
-
-## Features
-
-- Three AI agents with distinct roles in the medical consultation process
-- Using MD Agent Framework and our variations
 ## Prerequisites
-
-- Python 3.7 or higher
-- pip (Python package manager)
-- npm 
-
-## Installation
-
-1. Clone this repository:
+- Ensure you have Docker and Docker Compose installed.
+- For local development, ensure Node.js and Python 3.12 are installed.
 
 
-```
-git clone https://github.com/Derma-Lab/derma_bot
-cd derma_bot
-```
+### Running with Docker
+1. Build and start the Docker container:
+   ```bash
+   docker-compose up
+   ```
+2. Access the frontend at `http://localhost:3000`.
+3. Access the backend at `http://localhost:4000`.
 
-2. Install the required packages:
 
-```
-pip install -r requirements.txt
-```
+### Running Frontend Locally
+1. Navigate to the `ai-chatbot` directory.
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+4. Access the frontend at `http://localhost:3000`.
 
-3. Set up your environment variables:
-   Create a `.env` file in the project root directory with the following content:
+### Running Backend Locally
+1. Navigate to the `backend` directory.
+2. Create and activate a virtual environment:
+   ```bash
+   python3.12 -m venv venv
+   source venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Start the FastAPI server:
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 4000 --reload
+   ```
+5. The backend will be available at `http://localhost:4000`.
 
-```
-AZURE_OAI_API_KEY=your_azure_openai_api_key
-AZURE_OPENAI_ENDPOINT=the_endpoint_url
-DASHSCOPE_API_KEY = dashscope_api_key
-```
+## Environment Variables
+- Ensure to configure the `.env` files for both frontend and backend with necessary environment variables.
 
-DASHSCOPE_API_KEY is optional but we're recently considering to add it. 
+## Database Migrations
+- To run database migrations, use:
+  ```bash
+  pnpm run db:migrate
+  ```
 
-   Replace `your_*_*` with your actual API key and Discord bot tokens.
-
-## Usage
-
-1. Run the backend first:
-```
-uvicorn md_agent_backend:app --reload
-```
-
-2. To run the frontend
-```
-cd agent_ui
-
-npm install
-
-npm run dev
-```
-
-The frontend will be hosted at localhost:3000, but backend would be hosted at localhost:8000. Run the backend file first and try fiddling around the frontend :)
-
+## Notes
+- Ensure all services are up and running before accessing the application.
+- Adjust any configurations as necessary in the `.env` files.

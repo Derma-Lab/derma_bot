@@ -38,7 +38,20 @@ services:
       retries: 5
     networks:
       - dermalab
-  
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+    networks:
+      - dermalab
+
+
 networks:
   dermalab:
     external: false
