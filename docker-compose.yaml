@@ -1,9 +1,24 @@
 version: '3.8'
 
-# Connection string for Next.js app:
-# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/chatbot"
-
 services:
+  dermalab-ui:
+    build:
+      context: ./ai-chatbot
+      dockerfile: Dockerfile
+    container_name: dermalab-ui
+    command: ["/bin/sh", "-c", "npm run db:migrate && pnpm start"]
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    environment:
+      NODE_ENV: production
+    networks:
+      - dermalab
+      
+  
   postgres:
     image: postgres
     container_name: postgres
@@ -16,6 +31,18 @@ services:
       - "5001:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dermalab
+  
+networks:
+  dermalab:
+    external: false
+
 
 volumes:
   postgres_data:
