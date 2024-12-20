@@ -1,57 +1,56 @@
-# Dermalab AI Chatbot
 
-## Prerequisites
-- Ensure you have Docker and Docker Compose installed.
-- For local development, ensure Node.js and Python 3.12 are installed.
+# Installation and Usage Guide
+
+## Cloning the Repository
+Clone the repository using:
+
+```
+    git clone https://github.com/Derma-Lab/derma_bot
+```
+
+## Setup
+Navigate to the agent directory:
+
+```
+    cd agent
+```
 
 
-### Running with Docker
-1. Build and start the Docker container:
-   ```bash
-   docker-compose up
-   ```
-2. Access the frontend at `http://localhost:3000`.
-3. Access the backend at `http://localhost:4000`.
+### Run QuickInstall Script
+For Linux users:
 
+```
+    chmod +x quickinstall.sh
+    ./quickinstall.sh
+```
 
-### Running Frontend Locally
-1. Navigate to the `ai-chatbot` directory.
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Start the development server:
-   ```bash
-   pnpm dev
-   ```
-4. Access the frontend at `http://localhost:3000`.
+For Windows users:
 
-### Running Backend Locally
-1. Navigate to the `backend` directory.
-2. Create and activate a virtual environment:
-   ```bash
-   python3.12 -m venv venv
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Start the FastAPI server:
-   ```bash
-   uvicorn main:app --host 0.0.0.0 --port 4000 --reload
-   ```
-5. The backend will be available at `http://localhost:4000`.
+```
+    chmod +x quickinstall.bat
+    ./quickinstall.bat
+```
 
-## Environment Variables
-- Ensure to configure the `.env` files for both frontend and backend with necessary environment variables.
+## Running the Agent
+First, activate the virtual environment:
 
-## Database Migrations
-- To run database migrations, use:
-  ```bash
-  pnpm run db:migrate
-  ```
+For Linux users:
 
-## Notes
-- Ensure all services are up and running before accessing the application.
-- Adjust any configurations as necessary in the `.env` files.
+```
+    source .venv/bin/activate
+    streamlit run agent.py
+````
+
+For Windows users:'
+
+```
+    .venv\Scripts\activate
+    streamlit run agent.py
+```
+
+## Using the Agent
+The application has been installed via quickinstall script. To start the application:
+
+```
+    streamlit run agent.py
+```
